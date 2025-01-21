@@ -1,0 +1,224 @@
+﻿.toggletip {
+    --_tip-border-width: 15px;
+    --_tip-space: 3px;
+    --_min-target-size: 24px;
+    --_toggletip-max-width: 350px;
+    --_toggletip-max-height: 300px;
+    --_toggletip-icon-min-size: 1.5rem;
+    --_toggletip-icon-size: 1.5em;
+    display: inline;
+
+
+    &__open-wrapper {
+        position: relative;
+        display: inline-flex;
+        vertical-align: middle;
+        align-items: center;
+        justify-content: center;
+        width: var(--_toggletip-icon-size);
+        height: 1em;
+        margin-inline: 0.25em;
+    }
+
+    &__opener {
+        position: absolute;
+        background-color: transparent;
+        margin: 0;
+        padding: 0;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: var(--_min-target-size);
+        min-width: var(--_min-target-size);
+        border: none;
+        font-size: inherit;
+        cursor: pointer;
+
+        &:hover, &:focus {
+            border-radius: 0.25em;
+            outline-offset: 0.15em;
+            outline: 2px solid var(--control-focus-clr);
+        }
+        // Selector only added to override bootstrap, another 3 hours lost as I forget from last time :¬(
+        &:focus:not(:focus-visible) {
+            border-radius: 0.25em;
+            outline-offset: 0.15em;
+            outline: 2px solid var(--control-focus-clr);
+        }
+    }
+
+    &__icon {
+        forced-color-adjust: none;
+        padding: 0;
+        margin: 0;
+        font-size: var(--_toggletip-icon-size);
+    }
+
+    &__label {
+        font-size: 1em;
+    }
+
+    &__content-area {
+        padding-top: 1rem;
+        position: absolute;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr minmax(calc(var(--_min-target-size) + 1rem),auto);
+        border-radius: 0.25rem;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+        z-index: 1;
+        min-width: 350px;
+        max-width: var(--_toggletip-max-width);
+        width: max-content;
+        min-height: 100px;
+        max-height: var(--_toggletip-max-height);
+        height: max-content;
+        background-color: var(--control-surface-bg);
+        filter: drop-shadow(0px 0px 4px darkgrey);
+        border: none;
+        outline: none;
+
+        &--hidden {
+            display: none;
+        }
+
+        &--top {
+            bottom: calc(100% + var(--_tip-border-width) + var(--_tip-space));
+            left: 50%;
+            transform: translateX(-50%);
+
+            &::after {
+                position: absolute;
+                content: "";
+                border: var( --_tip-border-width) solid;
+                border-color: var(--control-footer-area-bg) transparent transparent transparent;
+                left: 50%;
+                transform: translateX(-50%);
+                top: 100%;
+                pointer-events: none;
+                forced-color-adjust: none;
+            }
+        }
+
+        &--bottom {
+            top: calc(100% + var(--_tip-border-width) + var(--_tip-space));
+            left: 50%;
+            transform: translateX(-50%);
+
+            &::after {
+                position: absolute;
+                content: "";
+                border: var( --_tip-border-width) solid;
+                border-color: transparent transparent var(--control-surface-bg) transparent;
+                left: 50%;
+                transform: translateX(-50%);
+                bottom: 100%;
+                pointer-events: none;
+                forced-color-adjust: none;
+            }
+        }
+
+        &--left {
+            right: calc(100% + var(--_tip-border-width) + var(--_tip-space));
+
+            &::after {
+                position: absolute;
+                content: "";
+                border: var( --_tip-border-width) solid;
+                border-color: transparent transparent transparent var(--control-surface-bg);
+                left: 100%;
+                top: 50%;
+                transform: translateY(-50%);
+                pointer-events: none;
+                forced-color-adjust: none;
+            }
+        }
+
+        &--right {
+            left: calc(100% + var(--_tip-border-width) + var(--_tip-space));
+
+            &::after {
+                position: absolute;
+                content: "";
+                border: var( --_tip-border-width) solid;
+                border-color: transparent var(--control-surface-bg) transparent transparent;
+                right: 100%;
+                top: 50%;
+                transform: translateY(-50%);
+                pointer-events: none;
+                forced-color-adjust: none;
+            }
+        }
+    }
+
+    &__content {
+        padding-inline: 0.75em;
+        grid-row: 1/2;
+        overflow-y: auto;
+
+        &:focus-visible {
+            outline-offset: 2px;
+            outline: 2px solid var(--control-focus-clr);
+            border-radius: 0.25rem;
+        }
+    }
+
+    &__footer {
+        grid-row: 2/3;
+        padding-inline: 0.75rem;
+        padding-block: 0.5rem;
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        background-color: var(--control-footer-area-bg);
+        max-height: calc(var(--_toggletip-icon-size) * 2);
+        align-self: end;
+    }
+
+    &__closer {
+        background-color: transparent;
+        border: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: none;
+        border-radius: 50%;
+        outline: 2px solid var(--control-inverse-body-area-bg);
+        max-height: calc(var(--_toggletip-icon-size) * 2);
+        max-width: calc(var(--_toggletip-icon-size) * 2);
+        min-height: var(--_min-target-size);
+        min-width: var(--_min-target-size);
+        font-size: inherit;
+        cursor: pointer;
+
+        &:active {
+            transform: scale(0.97);
+        }
+
+        &:focus, &:hover {
+            forced-color-adjust: none;
+            background-color: var(--control-inverse-body-area-bg);
+            color: var(--control-inverse-body-text-clr);
+        }
+    }
+}
+
+/*
+    <div class="toggletip>
+        <span class="toggletip__label"><span>
+
+            <div class="toggletip__open-wrapper">
+    
+                <button class="toggletip__opener">
+                    <span class="toggletip__icon"></span>
+                </button>
+                
+                //content-area, content, footer, closer not important for discussion.
+            </div>
+
+        <span class="toggletip__label"><span>
+    </div>
+*/

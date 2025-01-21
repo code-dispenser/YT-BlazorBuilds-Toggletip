@@ -1,0 +1,119 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, <span style="text-decoration:line-through">world!</span> ToggleTip!</h1>
+
+<p>
+    Once the maximum width is reached content goes on a new line. Once the maximum height is reached a scrollbar will appear with a tab index added.
+</p>
+<ul>
+    <li>Small (Default size): minimum width 350px x minimum height 100px can grow to 300px height before vertical.</li>
+    <li>Medium size: minimum width 350px x minimum height 100px can grow to 30 viewport width x 50 viewport height</li>
+    <li>Large size: minimum width 350px x minimum height 100px can grow to 40 viewport width x 60 viewport height</li>
+</ul>
+
+
+<p class="mt-4 mb-4">Toggletip next to copy and pasted bootstrap form fields:</p>
+<div style="display:grid;grid-template-columns: 1fr 1fr;gap:1rem; grid-auto-rows:auto;">
+    <div>
+        <label for="exampleInputEmail1" class="form-label">Email address (top toggletip, about email label left,  default size):</label>
+        <ToggleTip AriaOpenLabel="About emails" AriaCloseLabel="Close about emails" LabelPosition="ToggleTipLabel.OnTheLeft" Position="ToggleTipPosition.Top">
+            <Content>
+                <p>Email toggle-tip that looks a like a tooltip</p>
+            </Content>
+        </ToggleTip>
+        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+        <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+    </div>
+    <div>
+        <label for="exampleInput" class="form-label">Toggletips (left toggletip, label right, default size):</label>
+        <ToggleTip AriaOpenLabel="About toggle tips" AriaCloseLabel="Close toggle tips" LabelPosition="ToggleTipLabel.OnTheRight" Position="ToggleTipPosition.Left">
+            <Content>
+                <h2 style="font-size:1.25rem;">About toggletips</h2>
+                <p>
+                    This area is from a render fragment and contain any markup you like. The footer below with the close button is part of the toggletip.
+                </p>
+                <p>
+                    The toggletip icon uses EM's so it will grow with the surrounding text. The close button also grows with surrounding text.
+                    The render fragment is up to you how its sized. With no font-sizes used in the content it too will will grow.
+                </p>
+            </Content>
+        </ToggleTip>
+        <input type="text" class="form-control" id="exampleInput">
+    </div>
+    <div style="grid-column:1/3">
+        Toggletip on its own with a label after it (default right toggletip, keyboard information label right default, medium size):
+        <ToggleTip AriaOpenLabel="Keyboard information" AriaCloseLabel="Close keyboard information" Size="ToggleTipSize.Medium" LabelPosition="ToggleTipLabel.OnTheLeft">
+            <Content>
+                <h3 id="toggletip-keys" style="font-size:1.25rem;">Specific Keys used for the Toggletips</h3>
+                <ul aria-labelledby="toggletip-keys">
+                    <li><b>Space key </b> Expand (open) / collapse (close) the toggletip.</li>
+                    <li><b>Enter key </b> Expand /collapse the toggletip.</li>
+                    <li><b>Esc key </b> Close the toggletip and set focus back on the toggletip button.</li>
+                    <li><b>Tab key </b>Moves focus to the scrollable content or the first focusable element. Once there are no more focusable elements focus will move to the next focusable element on the page, closing the toggletip as the focus moves away.</li>
+                </ul>
+                <p>Additional: Every toggletip has a close button signifying the end of its content. Activating the close button closes the toggle tip and returns focus to the toggletip button</p>
+                <p>Mouse users can click outside of the toggletip content area to close it</p>
+            </Content>
+        </ToggleTip>
+    </div>
+    <div style="grid-column:1/3">
+        <p>Below, a toggletip buried somewhere in a paragraph of text (bottom toggletip,label left, large size). <button class="btn btn-primary" @onclick="() => ToggleFontSize(_fontSize)">Toggle font size of the lorem ipsum text between 1 and 2 and 3 rem</button></p>
+
+        <div style="font-size:@($"{_fontSize}rem")">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec lacinia, erat id aliquet feugiat, arcu justo porttitor risus, non scelerisque tellus sapien lobortis risus. Nulla in purus a massa volutpat lacinia. Praesent et posuere ipsum. Maecenas sit amet lorem vel massa consequat consequat.
+            Nunc eros massa, ultricies sed mattis at, rutrum eget est. Cras faucibus purus ac ornare semper. Ut euismod non lorem non luctus. Proin eu dui purus. Duis ipsum turpis, sollicitudin ac elit sit amet, placerat<ToggleTip AriaOpenLabel="ttPlacerat, meaning" AriaCloseLabel="Close placerat meaning" LabelPosition="ToggleTipLabel.OnTheLeft" Position="ToggleTipPosition.Bottom" Size="ToggleTipSize.Large">
+                <Content>
+
+                    <p>From Chatgpt:</p>
+                    <p>
+                        "Placerat" is Latin and can be translated to English as: "It will please" or "It pleases" (depending on context).
+                        If you meant "placerat" from Lorem Ipsum text, it's a nonsensical placeholder without direct meaning.
+                    </p>
+                </Content>
+            </ToggleTip>convallis dui. In lectus orci, convallis vel tellus ac, laoreet tristique augue. Sed turpis nibh, varius non ex a, facilisis facilisis enim. Nam ut tellus vitae orci mattis rutrum at nec elit. In hac
+            habitasse platea dictumst. Pellentesque id commodo erat. Cras interdum quis massa a finibus. Sed molestie, ex id mollis tempus, tellus est aliquet ipsum, vitae commodo velit velit nec nisi.
+            Aenean interdum, ante et scelerisque elementum, nunc sem gravida nisl, sit amet aliquet nunc tortor quis mauris. Nunc dapibus, massa efficitur varius varius, eros elit consequat lacus, eget commodo nulla urna sed nisl. Sed lobortis dignissim massa a ullamcorper. Fusce quis dolor hendrerit,posuere lacus
+            in, dignissim felis. Phasellus dui sapien, convallis et porta non, iaculis sit amet
+        </div>
+
+    </div>
+</div>
+<span role="status" class="screen-reader-only">
+    @_alertMessage
+</span>
+<style>
+    .screen-reader-only {
+        position: absolute;
+        z-index: -1;
+        top: 0;
+        left: 0;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        color: transparent;
+        border: 0;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        overflow: hidden;
+    }
+</style>
+@code{
+    private int _fontSize = 1;
+    private string _alertMessage = String.Empty;
+    public async Task ToggleFontSize(int fontSize)
+    {
+        _fontSize = fontSize switch
+        {
+            1 => 2,
+            2 => 3,
+            3 => 1,
+            _ => 1
+        };
+
+        _alertMessage = $"Font size changed to {_fontSize} r e m";
+    }
+
+}

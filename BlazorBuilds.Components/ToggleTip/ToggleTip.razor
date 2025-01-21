@@ -1,0 +1,169 @@
+﻿@implements IAsyncDisposable
+@inject     IJSRuntime _jsRuntime
+
+<div @ref="_divContainerRef" class="@GlobalValues.ToggleTip_Class" @onkeydown="HandleKeyDown" style="@GetSizeStyle(Size)" data-static="@GlobalValues.GetStyleAsValue(StyleAs)">
+    <!--
+    Originally used inline flex with order for flex item to move the label from left to right but the inline flex caused vertical alignment issues when dropping the toggletip in the middle of text
+    -->
+    @if (LabelPosition == ToggleTipLabel.OnTheLeft)
+    {
+        <span class="@GlobalValues.ToggleTip_Label_Class" aria-hidden="true">@AriaOpenLabel</span>
+    }
+
+    <div class="@GlobalValues.ToggleTip_Open_Wrapper_Class">
+
+        <button @ref="_buttonOpenRef" class="@GlobalValues.ToggleTip_Opener_Class" aria-label="@AriaOpenLabel" aria-controls="@_ariaControlsID"
+        aria-expanded="@_ariaExpanded.ToString().ToLower()" @onclick="ToggleContent" type="button">
+            <span class="@GlobalValues.ToggleTip_Icon_Class @GlobalValues.ToggleTip_Icon_Name_Class" aria-hidden="true"></span>
+        </button>
+
+        <div id="@_ariaControlsID" class="@GetContentAreaClasses(_showContent, Position)" tabindex="-1">
+
+            <div @ref="_divContentRef" class="@GlobalValues.ToggleTip_Content_Class">
+                @Content
+            </div>
+            <div class="@GlobalValues.ToggleTip_Footer_Class">
+                <button class="@GlobalValues.ToggleTip_Closer_Class" aria-label="@AriaCloseLabel" type="button" @onclick="HandleClickToClose">
+                    <span class="@GlobalValues.ToggleTip_Icon_Class @GlobalValues.ToggleTip_Close_Icon_Name_Class" aria-hidden="true"></span>
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    @if (LabelPosition == ToggleTipLabel.OnTheRight)
+    {
+        <span class="@GlobalValues.ToggleTip_Label_Class" aria-hidden="true">@AriaOpenLabel</span>
+    }
+</div>
+
+@code {
+
+    [Parameter, EditorRequired] public string AriaOpenLabel  { get; set; } = default!;
+    [Parameter, EditorRequired] public string AriaCloseLabel { get; set; } = default!;
+
+    [Parameter] public ToggleTipLabel         LabelPosition  { get; set; } = ToggleTipLabel.OnTheLeft;
+    [Parameter] public ToggleTipPosition      Position       { get; set; } = ToggleTipPosition.Right;
+    [Parameter] public ToggleTipSize          Size           { get; set; } = ToggleTipSize.Small;
+    [Parameter] public RenderFragment?        Content        { get; set; } = default;
+    [Parameter] public StyleAs                StyleAs        { get; set; } = StyleAs.Dynamic;
+
+    private ElementReference _buttonOpenRef   { get; set; }
+    private ElementReference _divContentRef   { get; set; }
+    private ElementReference _divContainerRef { get; set; }
+
+    private DotNetObjectReference<ToggleTip>? _toggleTipDotNetRef;
+    private IJSObjectReference?               _jsModule;
+
+    private string _ariaControlsID  = Guid.NewGuid().ToString();
+    private bool   _showContent     = false;
+    private bool   _ariaExpanded    = false;
+    /*
+        * I had to use two bools one for ariaExpanded and showContent. Originally I used showContent for aria-expanded and to show the content which worked fine other than when closing with the escape key as the screen reader 
+        * would sometimes announce the button name followed by expanded collapsed or only just expanded when it was collapsed, even when the value in the dom was correct.
+        * 
+        * My only guess was that using the escape key to close the content, for the screen reader moved any virtual focus back to the button which was expanded, but at the same time I was changing the variable to false and setting
+        * focus to the button, was too much for the screen reader. 
+        * 
+        * Using a bool for expanded and setting the aria-expanded to false with a render to get it in the dom before closing the content and then setting focus to the button solved the issue, with it now being announced
+        * correctly every time. I did try and render the original single showContent to false before moving focus to the button but that resulted in the screen reader announcing the button name followed by collapsed 
+    * twice in succession.
+     */
+    protected override void OnParametersSet()
+    {
+        if (true == String.IsNullOrWhiteSpace(AriaOpenLabel))  throw new ArgumentNullException(nameof(AriaOpenLabel), GlobalValues.Aria_Open_Label_Exception_Message);
+        if (true == String.IsNullOrWhiteSpace(AriaCloseLabel)) throw new ArgumentNullException(nameof(AriaCloseLabel), GlobalValues.Aria_Close_Label_Exception_Message);
+    }
+
+    private async Task ToggleContent()
+    {
+        _showContent = _ariaExpanded = !_ariaExpanded;
+
+        if(_showContent == true)
+        {
+            /*
+                * https://learn.microsoft.com/en-us/aspnet/core/blazor/components/rendering?view=aspnetcore-6.0#an-asynchronous-handler-involves-multiple-asynchronous-phases-1
+            */
+            await Task.Yield();//cause render to show toggletip so we can have the dimensions available for javascript, prior to checking/adding the tabindex as the css uses display:none i.e no dimensions for javascript
+            await CheckAddTabIndex(_divContentRef);
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs keyboardEventArgs)
+    {
+        if (keyboardEventArgs.Key == GlobalValues.Toggletip_KeyBoard_Close_Key)
+        {
+            _ariaExpanded = false;
+            await Task.Delay(100);//yield control for re-render with time for screen reader before close.
+            await HandleClickToClose();
+        }
+    }
+
+    private async Task HandleClickToClose()
+    {
+        if(_ariaExpanded == true)
+        {
+            _ariaExpanded = false;
+            await Task.Delay(100);//yield control for re-render with time for screen reader before close.
+        }
+        _showContent = _ariaExpanded;
+        await _buttonOpenRef.FocusAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+        =>  await firstRender.WhenTrue(()  => RegisterJSCallBack());
+
+    private async ValueTask RegisterJSCallBack()
+    {
+        _toggleTipDotNetRef = DotNetObjectReference.Create(this);
+        _jsModule           = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", GlobalValues.JavaScript_File_Path);
+
+        await _jsModule.InvokeVoidAsync(GlobalValues.JavaScript_Register_Func, _toggleTipDotNetRef, nameof(FocusLeftControl), _divContainerRef, _divContentRef);
+    }
+
+    private async ValueTask CheckAddTabIndex(ElementReference contentElement)
+
+        => await (_jsModule is not null).WhenTrue(() =>_jsModule!.InvokeVoidAsync(GlobalValues.JavaScript_AddTabIndex_Func, contentElement));
+
+    private string GetContentAreaClasses(bool showContent, ToggleTipPosition position)
+    {
+        var positionClass = position switch
+        {
+            ToggleTipPosition.Left   => GlobalValues.ToggleTip_Content_Area_Left_Class,
+            ToggleTipPosition.Bottom => GlobalValues.ToggleTip_Content_Area_Bottom_Class,
+            ToggleTipPosition.Top    => GlobalValues.ToggleTip_Content_Area_Top_Class,
+            _                        => GlobalValues.ToggleTip_Content_Area_Right_Class
+        };
+
+        return showContent ? $"{GlobalValues.ToggleTip_Content_Area_Class} {positionClass}" : $"{GlobalValues.ToggleTip_Content_Area_Class} {GlobalValues.ToggleTip_Content_Area_Hidden_Class}";
+    }
+
+    private string? GetSizeStyle(ToggleTipSize size)
+
+        => size switch
+        {
+            ToggleTipSize.Medium => $"{GlobalValues.ToggleTip_Max_Width_Var_Name}:{GlobalValues.ToggleTip_Medium_Width_Value};{GlobalValues.ToggleTip_Max_Height_Var_Name}:{GlobalValues.ToggleTip_Medium_Height_Value}",
+            ToggleTipSize.Large  => $"{GlobalValues.ToggleTip_Max_Width_Var_Name}:{GlobalValues.ToggleTip_Large_Width_Value};{GlobalValues.ToggleTip_Max_Height_Var_Name}:{GlobalValues.ToggleTip_Large_Height_Value}",
+            _                    => null  // Causes attribute to be omitted so it will use the css default values. 
+        };
+
+    [JSInvokable]
+    public async Task FocusLeftControl()
+    {
+        _showContent = _ariaExpanded = false;
+         await InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _toggleTipDotNetRef?.Dispose();
+      
+        if (_jsModule is not null)
+        {
+            await _jsModule.InvokeVoidAsync(GlobalValues.JavaScript_UnRegister_Func, _divContainerRef);
+            await _jsModule.DisposeAsync();
+        }
+    }
+}

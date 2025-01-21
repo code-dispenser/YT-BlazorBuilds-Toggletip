@@ -1,0 +1,14 @@
+﻿:root {
+    --control-focus-clr: navy;
+    --control-surface-bg: #f2f2f2;
+    --control-border-bg: silver;
+    --control-footer-area-bg: #e6e6e6;
+    --control-inverse-body-area-bg: #131313;
+    --control-inverse-body-text-clr: #f2f2f2;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
