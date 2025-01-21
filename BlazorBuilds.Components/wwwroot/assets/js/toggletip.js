@@ -10,7 +10,7 @@ function addTabIndexIfScrollableContent(content) {
         content.removeAttribute("tabindex");
     }
 }
-function registerLostFocusHandler(blazorCallBackRef, callBackName, containerElement, content) {
+function registerLostFocusHandler(blazorCallBackRef, callBackName, containerElement) {
     if (!containerElement)
         return;
     const handler = (event) => {
