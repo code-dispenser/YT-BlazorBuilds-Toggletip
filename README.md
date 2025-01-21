@@ -4,7 +4,7 @@
 
 This repository contains the solution from my YouTube video showing how to build an accessible toggletip component.
 
-YouTube video: TBA
+YouTube video: https://youtu.be/oVUZ_cq4BqA
 
 Coffees welcomed : https://ko-fi.com/codedispenser
 
